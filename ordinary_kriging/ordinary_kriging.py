@@ -24,7 +24,6 @@ class OrdinaryKriging(object):
         fname = str(self.config['ORDINARY-KRIGING']['input_spectrum_map_file'])
         self.spectrum_map = np.loadtxt(fname, dtype=np.float, delimiter=self.ARRAY_FILE_DELIM)
         self.map_dim1, self.map_dim2 = self.spectrum_map.shape
-        print("debug: ", self.map_dim1, self.map_dim2)
         return
 
     def _generate_pathloss_data(self):
@@ -47,7 +46,7 @@ class OrdinaryKriging(object):
 
     def _generate_lognormal_pathloss_data(self):
         self.pathloss_per_tx = []
-        self.pathloss_granulairty = float(self.config['LOG-NORMAL-PATHLOSS']['granularity_sample_per_meter'])
+        self.pathloss_granulairty = float(self.config['PATHLOSS']['granularity_sample_per_meter'])
         self.map_dim1 = int(round(self.x_extent_meter * self.pathloss_granulairty, 0))
         self.map_dim2 = int(round(self.y_extent_meter * self.pathloss_granulairty,0))
         self.tx_x_locs = []
@@ -103,16 +102,25 @@ class OrdinaryKriging(object):
         plt.ylabel("Meter")
         plt.colorbar().ax.set_ylabel('RX (dBm)', rotation=270, labelpad=20)
         fname = str( self.config['VISUALIZER']['output_filename'] )
-        print(fname)
         plt.savefig(fname)
         plt.close()
         return
 
     def _sample_dataf_from_spectrum_map(self):
-        #TODO: sample data as per ini file params
+        all_grid_indices = [(i,j) for i in range(self.map_dim1) for j in range(self.map_dim2)]
+        sample_size_percent = float(self.config['ORDINARY-KRIGING']['sample_density_percent'])
+        sample_size_count = int( round(1.*self.map_dim1*self.map_dim2*sample_size_percent/100.,0))
+        selected_indices = random.sample(all_grid_indices, k=sample_size_count)
+        self.sample_data=[]
+        for v in selected_indices:
+            self.sample_data.append(( v[0],v[1], self.spectrum_map[v[0], v[1]]))
         return
 
     def run_kriging(self):
+        self._sample_dataf_from_spectrum_map()
+        if len(self.sample_data) <3:
+            print("Not Enough data for kriging!!")
+            return
         #TODO: code kriging algo
         return
 if __name__ == '__main__':
