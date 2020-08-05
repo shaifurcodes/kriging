@@ -1,0 +1,1 @@
+Set path to "input_sparse_data_file" in the section "ORDINARY-KRIGING" and set the map dimensions in "x_extent_meter" and "y_extent_meter"  under subsection  "SPECTRUM-MAP" in the ordinary_kriging.ini file
